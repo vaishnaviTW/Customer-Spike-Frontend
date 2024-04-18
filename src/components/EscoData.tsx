@@ -33,9 +33,16 @@ const [name,setName] = useState('');
 useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await o('http://localhost:5190/odata')
+        let response;
+        if(filter === "Id"){
+            response = await o('http://localhost:5190/odata')
+          .get('odata/escos')
+          .query({ $filter: `${filter} eq ${name}` });
+        }else{
+            response = await o('http://localhost:5190/odata')
           .get('odata/escos')
           .query({ $filter: `${filter} eq '${name}'` });
+        }
         SetD(response);
         console.log(response);
         
