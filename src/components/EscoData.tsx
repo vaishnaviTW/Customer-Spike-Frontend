@@ -13,6 +13,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { listEscos, searchByField, sort } from "../services/EscoServies";
 
 
 
@@ -23,72 +24,73 @@ const EscoData = () => {
 const [d,SetD]=useState([]);
 const [filter, setFilter] = useState('');
 const [name,setName] = useState('');
+const [orderBy, setOrderBy] = useState("asc");
 
   const handleChange = (event) => {
     setFilter(event.target.value);
-    console.log(filter)
+
+    searchByField(field,f).then((res)=>{
+      SetD(res.data.value);
+    }).catch((err)=>{
+      console.log(err);     
+    })
+    console.log(filter);
   };
 
+const handleClick = (value)=>{
+    if(orderBy === "asc"){
+        setOrderBy("desc");
+    }else{
+        setOrderBy("asc");
+    }
+    sort(value,orderBy).then((res)=>{
+            SetD(res.data.value);
+    })
+}
 
 useEffect(() => {
     const fetchData = async () => {
-      try {
-        let response;
-        if(filter === "Id"){
-            response = await o('http://localhost:5190/odata')
-          .get('odata/escos')
-          .query({ $filter: `${filter} eq ${name}` });
-        }else{
-            response = await o('http://localhost:5190/odata')
-          .get('odata/escos')
-          .query({ $filter: `${filter} eq '${name}'` });
-        }
-        SetD(response);
-        console.log(response);
-        
-      } catch (err) {
-        console.log(err);
-        (err);
+        listEscos().then((response) => {
+            SetD(response.data.value);            
+        }).catch((error) => {
+            console.log(error);
+        })
       } 
-    };
-
-    fetchData();
-  }, [name]);
+      fetchData();
+    }
+  , [name]);
 
 
   return (
     <div>
-    <Box sx={{ maxWidth: 500 }}>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Filter</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={filter}
-          label="Filter"
-          onChange={handleChange}
-        >
-          <MenuItem value={"Id"}>Id</MenuItem>
-          <MenuItem value={"Name"}>Name</MenuItem>
-        </Select>
-      </FormControl>
-      <br /> <br />
-    </Box>
-    <TextField
-        id="outlined-controlled"
-        label="Field Value"
-        value={name}
-        onChange={(event) => {
-          setName(event.target.value);
-        }}
-      />
+
 
 <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table sx={{ minWidth: 800 }} aria-label="simple table">
         <TableHead>
+            <TableRow>
+                <TableCell><TextField
+                id="outlined-controlled"
+                label="Filter by Id"
+                value={name}
+                onChange={(event) => {
+                setName(event.target.value);
+                }}/>
+                </TableCell>
+                <TableCell>
+                <TextField
+                        id="outlined-controlled"
+                        label="Filter by Name"
+                        value={name}
+                        onChange={(event) => {
+                        setName(event.target.value);
+                        }}
+                    />
+                </TableCell>
+            </TableRow>
           <TableRow>
-            <TableCell>Id</TableCell>
-            <TableCell>Name</TableCell>
+            <TableCell style={{cursor: "pointer"}} onClick={()=>handleClick("Id")}>Id</TableCell>
+            <TableCell style={{cursor: "pointer"}} onClick={()=>handleClick("Name")}>Name</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
